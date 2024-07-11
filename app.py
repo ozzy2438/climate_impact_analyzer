@@ -15,32 +15,106 @@ from data_handler import DataHandler
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-st.set_page_config(layout="wide", page_title="Küresel İklim Değişikliği Etki Analizörü")
+st.set_page_config(layout="wide", page_title="Global Climate Change Impact Analyzer")
 
-# Custom CSS
+# Advanced CSS
 st.markdown("""
 <style>
-    .reportview-container {
-        background: linear-gradient(to right, #FFFFFF, #E0F7FA);
+    /* General style */
+    body {
+        font-family: 'Helvetica', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        color: #333;
     }
-    .sidebar .sidebar-content {
-        background: linear-gradient(to bottom, #4CAF50, #2196F3);
-    }
+    
+    /* Title style */
     h1 {
         color: #1565C0;
-        font-family: 'Helvetica', sans-serif;
         font-weight: bold;
         text-align: center;
         padding: 20px;
         border-bottom: 2px solid #1565C0;
+        shape-outside: circle(50%);
+        float: left;
+        width: 100%;
+        height: 100px;
+        margin-bottom: 20px;
     }
-    .stButton>button {
+    
+    /* Subtitle style */
+    h2 {
+        color: #4CAF50;
+        text-align: left;
+        padding: 10px;
+        border-left: 5px solid #4CAF50;
+        margin-top: 30px;
+    }
+    
+    /* Button style */
+    .stButton > button {
         color: #ffffff;
         background-color: #4CAF50;
         border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
+    .stButton > button:hover {
+        background-color: #45a049;
+        box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* Selectbox style */
     .stSelectbox {
         color: #1565C0;
+        background-color: #f1f8e9;
+        border-radius: 5px;
+        padding: 5px;
+    }
+    
+    /* Text style */
+    p {
+        text-align: justify;
+        line-height: 1.6;
+        margin-bottom: 15px;
+        hyphens: auto;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Chart container style */
+    .chart-container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    /* Scrollbar style */
+    ::-webkit-scrollbar {
+        width: 12px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 6px;
+        border: 3px solid #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #555;
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .fade-in {
+        animation: fadeIn 1s ease-in;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -63,29 +137,29 @@ def add_ml_prediction(data):
 def get_download_link(df):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="iklim_verisi.csv">CSV Dosyasını İndir</a>'
+    href = f'<a href="data:file/csv;base64,{b64}" download="climate_data.csv">Download CSV File</a>'
     return href
 
 def generate_climate_scenario(country, temperature_change, co2_emissions, sea_level_rise):
     prompt = f"""
-    Ülke: {country}
-    Sıcaklık Değişimi: {temperature_change}°C
-    CO2 Emisyonları: {co2_emissions} metrik ton
-    Deniz Seviyesi Yükselmesi: {sea_level_rise} metre
+    Country: {country}
+    Temperature Change: {temperature_change}°C
+    CO2 Emissions: {co2_emissions} metric tons
+    Sea Level Rise: {sea_level_rise} meters
 
-    Bu verilere dayanarak, gelecek 50 yıl için olası bir iklim senaryosu oluşturun ve bu senaryoya karşı alınabilecek 3 önlem önerin.
-    Lütfen yanıtınızı şu formatta verin:
-    Senaryo: [senaryo metni]
-    Önlemler:
-    1. [önlem 1]
-    2. [önlem 2]
-    3. [önlem 3]
+    Based on this data, create a possible climate scenario for the next 50 years and suggest 3 measures for this scenario.
+    Please provide your answer in the following format:
+    Scenario: [scenario text]
+    Measures:
+    1. [measure 1]
+    2. [measure 2]
+    3. [measure 3]
     """
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "Sen bir iklim uzmanısın."},
+            {"role": "system", "content": "You are a climate expert."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=1000,
@@ -96,47 +170,47 @@ def generate_climate_scenario(country, temperature_change, co2_emissions, sea_le
     return response.choices[0].message['content'].strip()
 
 def main():
-    st.title("Küresel İklim Değişikliği Etki Analizörü")
+    st.title("Global Climate Change Impact Analyzer")
     
     data = load_data()
     data = add_ml_prediction(data)
     map_viz = MapVisualizer(data)
     
-    st.sidebar.header("Filtreler")
-    selected_indicator = st.sidebar.selectbox("Gösterge Seçin", ['Temperature_Change', 'CO2_Emissions', 'Sea_Level_Rise', 'Predicted_Temperature_Change'])
+    st.sidebar.header("Filters")
+    selected_indicator = st.sidebar.selectbox("Select Indicator", ['Temperature_Change', 'CO2_Emissions', 'Sea_Level_Rise', 'Predicted_Temperature_Change'])
     
     map_style = get_map_style()
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.subheader("Küresel Etki Haritası")
+        st.subheader("Global Impact Map")
         m = map_viz.create_impact_map(map_style=map_style)
         folium_static(m, width=800, height=500)
     
     with col2:
-        st.subheader("En Çok Etkilenen 10 Ülke")
+        st.subheader("Top 10 Most Affected Countries")
         top_10 = data.nlargest(10, selected_indicator)
-        fig = px.bar(top_10, x='NAME', y=selected_indicator, title=f"{selected_indicator} için En Yüksek 10 Ülke")
+        fig = px.bar(top_10, x='NAME', y=selected_indicator, title=f"Top 10 Countries for {selected_indicator}")
         st.plotly_chart(fig)
     
-    st.subheader("Korelasyon Analizi")
+    st.subheader("Correlation Analysis")
     correlation_matrix = data[['Temperature_Change', 'CO2_Emissions', 'Sea_Level_Rise', 'Predicted_Temperature_Change']].corr()
     fig = px.imshow(correlation_matrix, text_auto=True, aspect="auto")
     st.plotly_chart(fig)
     
-    st.subheader("Etkileşimli Dağılım Grafiği")
-    x_axis = st.selectbox("X-ekseni", ['Temperature_Change', 'CO2_Emissions', 'Sea_Level_Rise', 'Predicted_Temperature_Change'])
-    y_axis = st.selectbox("Y-ekseni", ['Temperature_Change', 'CO2_Emissions', 'Sea_Level_Rise', 'Predicted_Temperature_Change'])
-    fig = px.scatter(data, x=x_axis, y=y_axis, hover_name='NAME', title=f"{x_axis} ve {y_axis}")
+    st.subheader("Interactive Scatter Plot")
+    x_axis = st.selectbox("X-axis", ['Temperature_Change', 'CO2_Emissions', 'Sea_Level_Rise', 'Predicted_Temperature_Change'])
+    y_axis = st.selectbox("Y-axis", ['Temperature_Change', 'CO2_Emissions', 'Sea_Level_Rise', 'Predicted_Temperature_Change'])
+    fig = px.scatter(data, x=x_axis, y=y_axis, hover_name='NAME', title=f"{x_axis} vs {y_axis}")
     st.plotly_chart(fig)
     
-    st.subheader("Veriyi İndir")
+    st.subheader("Data Download")
     st.markdown(get_download_link(data), unsafe_allow_html=True)
 
-    st.subheader("İklim Senaryosu Üreteci")
-    selected_country = st.selectbox("Ülke Seçin", data['NAME'].unique())
-    if st.button("Senaryo Üret"):
+    st.subheader("Climate Scenario Generator")
+    selected_country = st.selectbox("Select Country", data['NAME'].unique())
+    if st.button("Generate Scenario"):
         country_data = data[data['NAME'] == selected_country].iloc[0]
         scenario = generate_climate_scenario(
             selected_country,
@@ -145,9 +219,9 @@ def main():
             country_data['Sea_Level_Rise']
         )
         
-        st.write(scenario)
+        st.markdown('<p class="fade-in">{}</p>'.format(scenario), unsafe_allow_html=True)
         
-        # Senaryo sonuçlarını haritada göster
+        # Show scenario results on the map
         m = map_viz.create_impact_map(map_style=map_style)
         folium.Marker(
             location=[country_data['geometry'].centroid.y, country_data['geometry'].centroid.x],
@@ -156,14 +230,31 @@ def main():
         ).add_to(m)
         folium_static(m, width=800, height=500)
         
-        # İlgili kaynaklar
-        st.subheader("İlgili Kaynaklar")
+        # Related resources
+        st.subheader("Related Resources")
         st.markdown("""
-        - [IPCC Raporları](https://www.ipcc.ch/reports/)
-        - [NASA İklim Değişikliği](https://climate.nasa.gov/)
-        - [Dünya Meteoroloji Örgütü](https://public.wmo.int/en)
-        - [Birleşmiş Milletler İklim Değişikliği](https://unfccc.int/)
+        - [IPCC Reports](https://www.ipcc.ch/reports/)
+        - [NASA Climate Change](https://climate.nasa.gov/)
+        - [World Meteorological Organization](https://public.wmo.int/en)
+        - [United Nations Climate Change](https://unfccc.int/)
         """)
+
+    # Example: Shaped container
+    st.markdown("""
+    <div style="
+        width: 200px;
+        height: 200px;
+        background-color: #4CAF50;
+        clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    ">
+        Climate Change
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

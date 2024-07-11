@@ -45,7 +45,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-openai.api_key = "sk-proj-1hyuWddhOwZgNJHHS9x7T3BlbkFJelhnlFpXxcYFJcnefCur"
+openai.api_key = ""
 
 @st.cache_data
 def load_data():
